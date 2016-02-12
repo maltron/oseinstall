@@ -62,6 +62,15 @@ EOF"; done
 
 for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do ssh ${node} "docker-storage-setup; systemctl start docker; systemctl enable docker" ; done
 
+
+## LAST LINE WORKED
+ssh master00-${GUID}.oslab.opentlc.com "mkdir -p ~/.ssh; rm -rf id_rsa; rm -rf id_rsa.pub; rm -rf authorized_keys;"
+ssh master00-6463 "mkdir -p ~/.ssh; rm -rf ~/.ssh/id_rsa; rm -rf ~/.ssh/id_rsa.pub; ssh-keygen -q -t rsa -b 1024 -f /root/.ssh/id_rsa -N ''" 
+
+
+ssh master00-${GUID}.oslab.opentlc.com "yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools atomic-openshift-utils nfs-server rpcbind"
+
+
 mkdir -p /var/named/zones
 
 echo "\$ORIGIN  .
