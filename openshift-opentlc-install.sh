@@ -39,10 +39,28 @@ cat << EOF >> /etc/hosts
 192.168.0.201 node01-${GUID}.oslab.opentlc.com node01-${GUID}
 EOF
 
+for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do ssh ${node} "cat << EOF >> /etc/hosts
+192.168.0.100 master00-${GUID}.oslab.opentlc.com master00-${GUID}
+192.168.0.101 infranode00-${GUID}.oslab.opentlc.com infranode00-${GUID}
+192.168.0.200 node00-${GUID}.oslab.opentlc.com node00-${GUID}
+192.168.0.201 node01-${GUID}.oslab.opentlc.com node01-${GUID}
+EOF"; done
+
 echo StrictHostKeyChecking no >> /etc/ssh/ssh_config
 ssh master00-${GUID} "echo StrictHostKeyChecking no >> /etc/ssh/ssh_config"
 
 for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do scp /etc/yum.repos.d/open.repo ${node}:/etc/yum.repos.d/open.repo; ssh ${node} "yum clean all; yum repolist; yum -y update"; ssh ${node} "yum -y remove NetworkManager*; yum -y install docker"; done
+
+for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do ssh ${node} "sed -i \"s/OPTIONS.*/OPTIONS='--selinux-enabled --insecure-registry 172.30.0.0\/16'/\" /etc/sysconfig/docker" ; done
+
+for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do ssh ${node} "systemctl stop docker; rm -rf /var/lib/docker/*" ; done
+
+for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do ssh ${node} "cat <<EOF > /etc/sysconfig/docker-storage-setup
+DEVS=/dev/vdb
+VG=docker-vg
+EOF"; done
+
+for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do ssh ${node} "docker-storage-setup; systemctl start docker; systemctl enable docker" ; done
 
 mkdir -p /var/named/zones
 
