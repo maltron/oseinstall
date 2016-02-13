@@ -54,7 +54,7 @@ echo StrictHostKeyChecking no >> /etc/ssh/ssh_config
 ssh master00-${GUID} "echo StrictHostKeyChecking no >> /etc/ssh/ssh_config"
 
 echo ">>> [5/15] Updating repositories, updating, removing NetworkManager and installing Docker"
-for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do scp /etc/yum.repos.d/open.repo ${node}:/etc/yum.repos.d/open.repo; ssh ${node} "yum clean all; yum repolist; yum -y update"; ssh ${node} "yum -y remove NetworkManager*; yum -y install docker"; done
+for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do scp /etc/yum.repos.d/open.repo ${node}:/etc/yum.repos.d/open.repo; ssh ${node} "yum clean all; yum repolist; yum -y update"; ssh ${node} "systemctl stop firewalld; systemctl disable firewalld; yum -y remove NetworkManager*; yum -y install docker"; done
 
 echo ">>> [6/15] Updating /etc/sysconfig/docker allowing insecure-registry IP"
 for node in master00-${GUID}.oslab.opentlc.com infranode00-${GUID}.oslab.opentlc.com node00-${GUID}.oslab.opentlc.com node01-${GUID}.oslab.opentlc.com; do ssh ${node} "sed -i \"s/OPTIONS.*/OPTIONS='--selinux-enabled --insecure-registry 172.30.0.0\/16'/\" /etc/sysconfig/docker" ; done
