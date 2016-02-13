@@ -27,7 +27,7 @@ gpgcheck=0
 EOF
 
 echo ">>> [2/15] oselab: Updating repositories and updating. Installing DNS Server"
-yum clean all; yum repolist; yum update; yum -y install bind bind-utils bash-completion vim
+yum clean all; yum repolist; yum -y update; yum -y install bind bind-utils bash-completion vim
 
 export GUID=`hostname|cut -f2 -d-|cut -f1 -d.`
 export guid=`hostname|cut -f2 -d-|cut -f1 -d.`
