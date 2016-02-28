@@ -244,3 +244,20 @@ items:
             protocol: TCP
 EOF
 
+export GUID=`hostname|cut -f2 -d-|cut -f1 -d.`
+export guid=`hostname|cut -f2 -d-|cut -f1 -d.`
+HostIP=`host infranode00-$GUID.oslab.opentlc.com  ipa.opentlc.com |grep infranode | awk '{print $4}'`
+domain="cloudapps-$GUID.oslab.opentlc.com"
+
+oc volume deploymentConfig/gogs-mysql --add --name=storage-gogs-mysql --mount-path=/var/lib/mysql/data --claim-name=gogs-mysql --type=persistentVolumeClaim
+oc expose deploymentConfig/gogs-mysql --port=3306
+oc volume deploymentConfig/gogs --add --name=storage-gogs-data --mount-path=/data --claim-name=gogs-data --type=persistentVolumeClaim
+oc expose deploymentConfig/gogs --port=3000
+oc expose service/gogs --hostname=gogs.cloudapps-${GUID}.oslab.opentlc.com
+oc volume deploymentConfig/nexus --add --name=storage-nexus --mount-path=/sonatype-work --claim-name=nexus --type=persistentVolumeClaim
+oc expose deploymentConfig/nexus --port=8081
+oc expose service/nexus --hostname=nexus.cloudapp-${GUID}.oslab.opentlc.coms
+oc volume deploymentConfig/jenkins --add --name=storage-jenkins --mount-path=/var/jenkins_home --claim-name=jenkins --type=persistentVolumeClaim
+oc expose deploymentConfig/jenkins --port=8080
+oc expose service/jenkins --hostname=jenkins.cloudapp-${GUID}.oslab.opentlc.com
+
