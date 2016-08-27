@@ -1,29 +1,34 @@
 echo ">>> [1/1] oselab: Setting the Repositories"
-cat << EOF > /etc/yum.repos.d/open.repo
+cat << EOF > /etc/yum.repos.d/openshift.repo
 [rhel-7-server-rpms]
-name=Red Hat Enterprise Linux 7 RPMS
-baseurl=http://www.opentlc.com/repos/rhel-7-server-rpms
+name=Red Hat Enterprise Linux 7
+baseurl=http://oselab.example.com/repos/3.2/rhel-7-server-rpms http://www.opentlc.com/repos/ose/3.2/rhel-7-server-rpms
+enabled=1
+gpgcheck=0
+
+[rhel-7-server-rh-common-rpms]
+name=Red Hat Enterprise Linux 7 Common
+baseurl=http://oselab.example.com/repos/3.2/rhel-7-server-rh-common-rpms http://www.opentlc.com/repos/ose/3.2/rhel-7-server-rh-common-rpms
 enabled=1
 gpgcheck=0
 
 [rhel-7-server-extras-rpms]
-name=Red Hat Enterprise Linux 7 Extras RPMS
-baseurl=http://www.opentlc.com/repos/rhel-7-server-extras-rpms
+name=Red Hat Enterprise Linux 7 Extras
+baseurl=http://oselab.example.com/repos/3.2/rhel-7-server-extras-rpms http://www.opentlc.com/repos/ose/3.2/rhel-7-server-extras-rpms
 enabled=1
 gpgcheck=0
 
-[rhel-7-server-ose-3.1-rpms]
-name=Red Hat Enterprise Linux 7 Server OpenShift Enterprise 3.1
-baseurl=http://www.opentlc.com/repos/rhel-7-server-ose-3.1-rpms
+[rhel-7-server-optional-rpms]
+name=Red Hat Enterprise Linux 7 Optional
+baseurl=http://oselab.example.com/repos/3.2/rhel-7-server-optionak-rpms http://www.opentlc.com/repos/ose/3.2/rhel-7-server-optional-rpms
 enabled=1
 gpgcheck=0
 
-[rhel-ha-for-rhel-7-server-rpms]
-name=Red Hat Enterprise Linux 7 High Availbility
-baseurl=http://www.opentlc.com/repos/rhel-ha-for-rhel-7-server-rpms
+[rhel-7-server-ose-3.2-rpms]
+name=Red Hat Enterprise Linux 7 OSE 3.2
+baseurl=http://oselab.example.com/repos/3.2/rhel-7-server-ose-3.2-rpms http://www.opentlc.com/repos/ose/3.2/rhel-7-server-ose-3.2-rpms
 enabled=1
 gpgcheck=0
-
 EOF
 
 echo ">>> [2/15] oselab: Updating repositories and updating. Installing DNS Server"
