@@ -1,3 +1,4 @@
+oc project openshift-infra
 oc create -n openshift-infra -f - <<API
 apiVersion: v1
 kind: ServiceAccount
