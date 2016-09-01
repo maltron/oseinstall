@@ -1,5 +1,5 @@
-oadm registry --replicas=1 --selector='region=infra' --config=/etc/origin/master/admin.kubeconfig --service-account=registry --images='registry.access.redhat.com/openshift3/ose-${component}:${version}'
-oadm router default-router --stats-password='maltron' --replicas=1 --service-account=router --selector='region=infra' --credentials=/etc/origin/master/openshift-router.kubeconfig --images='registry.access.redhat.com/openshift3/ose-${component}:${version}'
+oadm registry --replicas=1 --selector='host=infra' --config=/etc/origin/master/admin.kubeconfig --service-account=registry --images='registry.access.redhat.com/openshift3/ose-${component}:${version}'
+oadm router default-router --stats-password='maltron' --replicas=1 --service-account=router --selector='host=infra' --credentials=/etc/origin/master/openshift-router.kubeconfig --images='registry.access.redhat.com/openshift3/ose-${component}:${version}'
 cat << EOF > /etc/exports
 /opt/storage/gogs/data    192.168.0.200 192.168.0.201(rw,sync,no_root_squash)
 /opt/storage/gogs/mysql   192.168.0.200 192.168.0.201(rw,sync,no_root_squash)
