@@ -11,5 +11,5 @@ oadm policy add-role-to-user edit system:serviceaccount:openshift-infra:metrics-
 oadm policy add-cluster-role-to-user cluster-reader system:serviceaccount:openshift-infra:heapster
 oc secrets new metrics-deployer nothing=/dev/null -n openshift-infra
 oc new-app -f metrics-deployer.yaml \
-    -p HAWKULAR_METRICS_HOSTNAME=hawkular-metrics.cloudapps.testdrive.com \
+    -p HAWKULAR_METRICS_HOSTNAME=hawkular-metrics.cloudapps.latam.forum.redhat.com \
     -p USE_PERSISTENT_STORAGE=false -n openshift-infra
