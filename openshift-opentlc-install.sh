@@ -125,7 +125,7 @@ zone \"${domain}\" IN {
 
 echo ">>> [14/15] oselab: Adjusting Permissions for DNS Server"
 chgrp named -R /var/named ; \
- chown named -Rv /var/named/zones ; \
+ chown named -Rv /var/named/dynamic ; \
  restorecon -Rv /var/named ; \
  chown -v root:named /etc/named.conf ; \
  restorecon -v /etc/named.conf ;
