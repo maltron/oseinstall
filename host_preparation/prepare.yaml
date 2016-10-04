@@ -1,0 +1,23 @@
+---
+# Prepartion for installation for OpenShift Container Platform 3.3
+- name: Prepare hosts for OpenShift Container Platform 3.3
+  hosts: master.example.com
+  vars:
+    prereqs_packages:
+      - vim
+      - wget
+      - git
+      - net-tools
+      - bind-utils
+      - iptables-services
+      - bridge-utils
+      - bash-completion
+      - docker
+      - http-tools
+  tasks:
+    - name: Set the hostname for each node
+      command: echo {{ ansible_host }}
+    - name: Setting the hostname
+      lineinfile: dest=/etc/hostname regexp='^' line='{{ ansible_host }}'
+#    - name: Setting the hostname
+#      replace: dest=/etc/hostname regexp='^(.*)$' replace='{{ ansible_host }}'
