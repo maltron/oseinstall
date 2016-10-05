@@ -15,10 +15,8 @@
       - docker
       - httpd-tools
   tasks:
-    - name: Set the hostname for each node
-      command: echo {{ ansible_host }}
     - name: Setting the hostname
-      lineinfile: dest=/etc/hostname regexp='^' line='{{ ansible_host }}'
+      copy: dest=/etc/hostname content="{{ ansible_host }}"
     - name: "Adding Repository: Red Hat Enterprise Linux 7"
       yum_repository: 
           name: rhel-7-server-rpms
@@ -59,5 +57,15 @@
     - name: "Installing Basic Applications"
       yum: name="{{ item }}" state=present
       with_items: prereqs_packages
+    - name: Create a partition for Docker
+      command: parted /dev/xvdb --script 'mkpart primary 0% 100%'
+    - name: Create a VG named docker-vg (used for Docker)
+      lvg: vg=docker-vg pvs=/dev/xvdb1
+    - name: Configuring Docker-Storage-Setup first
+      lineinfile: dest=/etc/sysconfig/docker-storage-setup line="VG=docker-vg"
+    - name: Run a Docker-Storage-Setup
+      command: /usr/bin/docker-storage-setup 
+
+
     
 
