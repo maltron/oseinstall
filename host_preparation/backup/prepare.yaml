@@ -13,7 +13,7 @@
       - bridge-utils
       - bash-completion
       - docker
-      - httpd-tools
+      - http-tools
   tasks:
     - name: Set the hostname for each node
       command: echo {{ ansible_host }}
@@ -21,12 +21,11 @@
       lineinfile: dest=/etc/hostname regexp='^' line='{{ ansible_host }}'
     - name: "Adding Repository: Red Hat Enterprise Linux 7"
       yum_repository: 
-          name: rhel-7-server-rpms
+          name: server-rpms
           description: Red Hat Enterprise Linux 7
           baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-rpms
           enabled: yes
           gpgcheck: no
-    - name: "Adding Repository: Red Hat Enterprise Linux 7 Common"
       yum_repository: 
           name: rhel-7-server-rh-common-rpms
           description: Red Hat Enterprise Linux 7 Common
@@ -42,22 +41,15 @@
           gpgcheck: no
     - name: "Adding Repository: Red Hat Enterprise Linux 7 Optional"
       yum_repository:
-          name: rhel-7-server-optional-rpms
+          name: rhel-7-server-extras-rpms
           description: Red Hat Enterprise Linux 7 Optional
           baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-optional-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-optional-rpms
           enabled: yes
           gpgcheck: no
-    - name: "Adding Repository: Red Hat Enterprise Linux 7 OSE 3.3"
+    - name: "Adding Repository: Red Hat Enterprise Linux 7 OSE $VERSION"
       yum_repository:
           name: rhel-7-server-ose-3.3-rpms
-          description:  Red Hat Enterprise Linux 7 OSE 3.3
+          description:  Red Hat Enterprise Linux 7 OSE $VERSION
           baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-ose-3.3-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-ose-3.3-rpms
           enabled: yes
           gpgcheck: no
-    - name: "Update All"
-      yum: name='*' state=latest update_cache=yes
-    - name: "Installing Basic Applications"
-      yum: name="{{ item }}" state=present
-      with_items: prereqs_packages
-    
-
