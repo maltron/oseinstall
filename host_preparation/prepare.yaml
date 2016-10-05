@@ -1,7 +1,8 @@
+#!/usr/bin/env ansible-playbook
 ---
 # Prepartion for installation for OpenShift Container Platform 3.3
 - name: Prepare hosts for OpenShift Container Platform 3.3
-  hosts: master.example.com
+  hosts: openshift_hosts
   vars:
     prereqs_packages:
       - vim
@@ -65,7 +66,8 @@
       lineinfile: dest=/etc/sysconfig/docker-storage-setup line="VG=docker-vg"
     - name: Run a Docker-Storage-Setup
       command: /usr/bin/docker-storage-setup 
-
+    - name: Setting Docker configuration with with the correct info
+      lineinfile: dest=/etc/sysconfig/docker regexp="OPTIONS=.*" line="OPTIONS=\"--selinux-enabled --insecure-registry 172.30.0.0/16  --log-driver=journald\""
 
     
 
