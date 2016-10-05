@@ -59,7 +59,7 @@
       yum: name="{{ item }}" state=present
       with_items: prereqs_packages
     - name: Create a partition for Docker
-      command: parted /dev/xvdb --script 'mkpart primary 0% 100%'
+      command: parted /dev/xvdb --script 'mklabel msdos mkpart primary 0% 100%'
     - name: Create a VG named docker-vg (used for Docker)
       lvg: vg=docker-vg pvs=/dev/xvdb1
     - name: Configuring Docker-Storage-Setup first
