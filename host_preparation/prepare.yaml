@@ -15,9 +15,12 @@
       - bash-completion
       - docker
       - httpd-tools
+    docker_device: /dev/xvdb
+    docker_device_partition: /dec/xvdb1 
   tasks:
     - name: Setting the hostname
       copy: dest=/etc/hostname content="{{ ansible_host }}"
+
     - name: "Adding Repository: Red Hat Enterprise Linux 7"
       yum_repository: 
           name: rhel-7-server-rpms
@@ -25,6 +28,7 @@
           baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-rpms
           enabled: yes
           gpgcheck: no
+
     - name: "Adding Repository: Red Hat Enterprise Linux 7 Common"
       yum_repository: 
           name: rhel-7-server-rh-common-rpms
@@ -32,6 +36,7 @@
           baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-rh-common-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-rh-common-rpms
           enabled: yes
           gpgcheck: no
+
     - name: "Adding Repository: Red Hat Enterprise Linux 7 Extras"
       yum_repository:
           name: rhel-7-server-extras-rpms
@@ -39,6 +44,7 @@
           baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-extras-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-extras-rpms
           enabled: yes
           gpgcheck: no
+
     - name: "Adding Repository: Red Hat Enterprise Linux 7 Optional"
       yum_repository:
           name: rhel-7-server-optional-rpms
@@ -46,6 +52,7 @@
           baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-optional-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-optional-rpms
           enabled: yes
           gpgcheck: no
+
     - name: "Adding Repository: Red Hat Enterprise Linux 7 OSE 3.3"
       yum_repository:
           name: rhel-7-server-ose-3.3-rpms
@@ -53,19 +60,26 @@
           baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-ose-3.3-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-ose-3.3-rpms
           enabled: yes
           gpgcheck: no
+
     - name: "Update All"
       yum: name='*' state=latest update_cache=yes
+
     - name: "Installing Basic Applications"
       yum: name="{{ item }}" state=present
       with_items: prereqs_packages
+
     - name: Create a partition for Docker
-      command: parted /dev/xvdb --script 'mklabel msdos mkpart primary 0% 100%'
+      command: parted {{ docker_device }} --script 'mklabel msdos mkpart primary 0% 100%'
+
     - name: Create a VG named docker-vg (used for Docker)
-      lvg: vg=docker-vg pvs=/dev/xvdb1
+      lvg: vg=docker-vg pvs={{ docker_device_partition }}
+
     - name: Configuring Docker-Storage-Setup first
       lineinfile: dest=/etc/sysconfig/docker-storage-setup line="VG=docker-vg"
+
     - name: Run a Docker-Storage-Setup
       command: /usr/bin/docker-storage-setup 
+
     - name: Setting Docker configuration with with the correct info
       lineinfile: dest=/etc/sysconfig/docker regexp="OPTIONS=.*" line="OPTIONS=\"--selinux-enabled --insecure-registry 172.30.0.0/16  --log-driver=journald\""
 
