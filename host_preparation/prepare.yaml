@@ -21,45 +21,7 @@
     - name: Setting the hostname
       copy: dest=/etc/hostname content="{{ ansible_host }}"
 
-    - name: "Adding Repository: Red Hat Enterprise Linux 7"
-      yum_repository: 
-          name: rhel-7-server-rpms
-          description: Red Hat Enterprise Linux 7
-          baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-rpms
-          enabled: yes
-          gpgcheck: no
-
-    - name: "Adding Repository: Red Hat Enterprise Linux 7 Common"
-      yum_repository: 
-          name: rhel-7-server-rh-common-rpms
-          description: Red Hat Enterprise Linux 7 Common
-          baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-rh-common-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-rh-common-rpms
-          enabled: yes
-          gpgcheck: no
-
-    - name: "Adding Repository: Red Hat Enterprise Linux 7 Extras"
-      yum_repository:
-          name: rhel-7-server-extras-rpms
-          description: Red Hat Enterprise Linux 7 Extras
-          baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-extras-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-extras-rpms
-          enabled: yes
-          gpgcheck: no
-
-    - name: "Adding Repository: Red Hat Enterprise Linux 7 Optional"
-      yum_repository:
-          name: rhel-7-server-optional-rpms
-          description: Red Hat Enterprise Linux 7 Optional
-          baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-optional-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-optional-rpms
-          enabled: yes
-          gpgcheck: no
-
-    - name: "Adding Repository: Red Hat Enterprise Linux 7 OSE 3.3"
-      yum_repository:
-          name: rhel-7-server-ose-3.3-rpms
-          description:  Red Hat Enterprise Linux 7 OSE 3.3
-          baseurl: http://oselab.example.com/repos/3.3/rhel-7-server-ose-3.3-rpms http://www.opentlc.com/repos/ose/3.3/rhel-7-server-ose-3.3-rpms
-          enabled: yes
-          gpgcheck: no
+    - include: repositories.yaml      
 
     - name: "Update All"
       yum: name='*' state=latest update_cache=yes

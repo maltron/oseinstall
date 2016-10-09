@@ -1,0 +1,19 @@
+--- 
+- name: Setup a DNS Server for CloudApps
+  hosts: localhost
+  vars: 
+    domain: example.com
+    infranode: 192.168.1.100
+  tasks:
+    - include: repositories.yaml
+
+    - name: Install all the necessary packages
+      yum: name={{ item }} update_cache=yes
+      with_items:
+         - bind
+         - bind_utils
+    - name: Templating the configuration file
+      template: src=nameserver/etc/named.conf.j2 dest=/etc/named.conf
+    - name: Templating the CloudApps Configuration file
+      template: src=nameserver/var/named/dynamic/cloudapps.example.com.db.j2 dest=/var/named/dynamic/cloudapps.{{ domain }}.db
+   
