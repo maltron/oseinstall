@@ -5,7 +5,7 @@ items:
 - apiVersion: v1
   kind: PersistentVolume
   metadata:
-    name: local{{ idx }}
+    name: local{{ idx+1 }}
   spec:
     capacity:
       storage: {{ pv_size }}
@@ -13,6 +13,6 @@ items:
       - ReadWriteMany
     nfs:
       server: {{ nfs_server }}
-      path: {{ nfs_path_prefix }}{{ idx }}
+      path: {{ nfs_path_prefix }}{{ idx+1 }}
     persistentVolumeReclaimPolicy: Recycle
 {% endfor %}

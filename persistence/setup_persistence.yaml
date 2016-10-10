@@ -3,13 +3,13 @@
   hosts: persistent_host
   vars:
     pv_number: 20
-    pv_size  : 5Gi
-    nfs_server: 192.168.56.100
+    pv_size  : 3Gi
+    nfs_server: 192.168.0.100
     nfs_path_prefix  : /var/storage/local
   tasks:
     - name: Create all the necessary directories
       file: path={{ nfs_path_prefix }}{{ item }} group=nfsnobody owner=nfsnobody mode=777 state=directory recurse=yes
-      with_sequence: count={{ pv_number }}
+      with_sequence: start=1 end={{ pv_number }}
 
     - name: Create all the necessary information in /etc/exports
       template: src=templates/exports.j2 dest=/etc/exports
@@ -17,11 +17,11 @@
     - name: Add the following lines into the IPTables rules for NFS
       lineinfile: dest=/etc/sysconfig/iptables state=present insertbefore="COMMIT" line={{ item }}
       with_items: 
-          - "iptables -I OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 111 -j ACCEPT"
-          - "iptables -I OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 2049 -j ACCEPT"
-          - "iptables -I OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 20048 -j ACCEPT"
-          - "iptables -I OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 50825 -j ACCEPT"
-          - "iptables -I OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 53248 -j ACCEPT"
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 111 -j ACCEPT"
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 2049 -j ACCEPT"
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 20048 -j ACCEPT"
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 50825 -j ACCEPT"
+         - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 53248 -j ACCEPT"
 
     - name: Restart IPTables Service
       service: name=iptables state=restarted
@@ -50,7 +50,7 @@
          - nfs-idmap
      
     - name: Template all the necessary Persistent Volumes in a temporary directory
-      template: src=templates/templates/persistentvolume.yaml.j2 dest=/tmp/persistentvolume.yaml
+      template: src=templates/persistentvolume.yaml.j2 dest=/tmp/persistentvolume.yaml
 
     - name: Change to administrator user in OpenShift
       command: oc login --username=system:admin

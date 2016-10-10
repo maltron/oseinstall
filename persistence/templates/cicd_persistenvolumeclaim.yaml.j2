@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: pvc-psql-gogs
+  spec:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: {{ pv_size }}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: pvc-psql-sonarqube
+  spec:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: {{ pv_size }}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: pvc-gogs-conf
+  spec:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: {{ pv_size }}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: pvc-gogs-repositories
+  spec:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: {{ pv_size }}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: pvc-jenkins
+  spec:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: {{ pv_size }}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: pvc-nexus
+  spec:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: {{ pv_size }}

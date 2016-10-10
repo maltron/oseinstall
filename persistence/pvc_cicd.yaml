@@ -1,0 +1,40 @@
+---
+- name: Setup persistence in CI/CD Project
+  hosts: localhost
+  connection: local
+  vars:
+     namespace: cicd
+     pv_size: 3Gi
+     gogs_conf_directory: /etc/gogs/conf
+     gogs_repositories_directory: /home/gogs/gogs-repositories
+     nexus_data_directory: /nexus-data
+     jenkins_data_directory: /var/lib/jenkins
+     postgresql_gogs_directory: /var/lib/pgsql/data
+     postgresql_sonarqube_directory: /var/lib/pgsql/data
+  tasks:
+     - name: Templating all the necessary information for creating the necessary PVC's
+       template: src=templates/cicd_persistenvolumeclaim.yaml.j2 dest=/tmp/cicd_persistentvolumeclaims.yaml
+     
+     - name: Before creating, delete any possible pvc's that already exist
+       command: oc delete persistentvolumeclaim/{{ item }} --namespace={{ namespace }}
+       ignore_errors: True
+       with_items:
+          - pvc-gogs-conf
+          - pvc-gogs-repositories
+          - pvc-nexus
+          - pvc-jenkins
+          - pvc-psql-gogs
+          - pvc-psql-sonarqube
+
+     - name: Creating all the Persistent Volume Claims
+       command: oc create --namespace={{ namespace }} --filename=/tmp/cicd_persistentvolumeclaims.yaml
+
+     - name: Applying all the necessary PVC's into the DeploymentConfig
+       command: oc volume dc/{{ item.dc }} --name={{ item.name }} --add --overwrite --mount-path={{ item.path }} --claim-name={{ item.claim }} --namespace={{ namespace }}
+       with_items:
+          - { dc: "gogs", name: "gogs-conf", path: "{{ gogs_conf_directory }}", claim: "pvc-gogs-conf" }
+          - { dc: "gogs", name: "gogs-repositories", path: "{{ gogs_repositories_directory }}", claim: "pvc-gogs-repositories" }
+          - { dc: "nexus", name: "nexus-data", path: "{{ nexus_data_directory }}", claim: "pvc-nexus" }
+          - { dc: "jenkins", name: "jenkins-data", path: "{{ jenkins_data_directory }}", claim: "pvc-jenkins" }
+          - { dc: "postgresql-gogs", name: "postgresql-data", path: "{{ postgresql_gogs_directory }}", claim: "pvc-psql-gogs" }
+          - { dc: "postgresql-sonarqube", name: "postgresql-data", path: "{{ postgresql_sonarqube_directory }}", claim: "pvc-psql-sonarqube" }
