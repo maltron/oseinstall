@@ -1,19 +1,44 @@
+#!/usr/bin/env ansible-playbook
 --- 
 - name: Setup a DNS Server for CloudApps
-  hosts: localhost
+  hosts: nameserver
   vars: 
     domain: example.com
     infranode: 192.168.1.100
   tasks:
-    - include: repositories.yaml
+    - name: Setting all the necessary repositories 
+      include: repositories.yaml
+
+    - name: "Update All"
+      yum: name='*' state=latest update_cache=yes
 
     - name: Install all the necessary packages
       yum: name={{ item }} update_cache=yes
       with_items:
          - bind
-         - bind_utils
+         - bind-utils
+
     - name: Templating the configuration file
       template: src=nameserver/etc/named.conf.j2 dest=/etc/named.conf
+
     - name: Templating the CloudApps Configuration file
       template: src=nameserver/var/named/dynamic/cloudapps.example.com.db.j2 dest=/var/named/dynamic/cloudapps.{{ domain }}.db
+
+    - name: Adjust all the permissions in each file created
+      file: path="/etc/named.conf" owner="named" group="named" 
+   
+    - name: Restore file default SELinux security context
+      command: "restorecon -v /etc/named.conf"
+
+    - name: Adjust all the permissions for CloudApps
+      file: path=/var/named/dynamic state=directory owner=named group=named recurse=yes
+
+    - name: Restore all files default SELinux Security Context
+      command: "restorecon -Rv /var/named/dynamic"
+
+    - name: Open ports for DNS Service
+      firewalld: service=dns zone=public permanent=true state=enabled immediate=true
+
+    - name: Start the service for BIND
+      service: name=named state=restarted enabled=true
    

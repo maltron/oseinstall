@@ -21,7 +21,8 @@
     - name: Setting the hostname
       copy: dest=/etc/hostname content="{{ ansible_host }}"
 
-    - include: repositories.yaml      
+    - name: Setting all the necessary repositories 
+      include: repositories.yaml      
 
     - name: "Update All"
       yum: name='*' state=latest update_cache=yes

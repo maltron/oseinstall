@@ -1,4 +1,7 @@
 [openshift_hosts]
-infra.example.com
-node1.example.com
-node2.example.com
+two.example.com
+
+
+
+[nameserver]
+three.example.com
