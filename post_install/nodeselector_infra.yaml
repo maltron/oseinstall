@@ -1,0 +1,12 @@
+---
+- name: This will set the NodeSelector in projects default and openshift-infra
+  hosts: master
+  vars:
+     namespaces:
+       - default
+       - openshift-infra
+     nodeselector: host=infra
+  tasks:
+     - name: Apply the Node Selector into the selected namespaces
+       command: "oc patch namespace/{{ item }} --patch='{\"metadata\": {\"annotations\": {\"openshift.io/node-selector\": \"{{ nodeselector }}\" }}}'"
+       with_items: "{{ namespaces }}"
