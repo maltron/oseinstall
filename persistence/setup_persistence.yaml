@@ -1,10 +1,11 @@
 ---
 - name: Setup a Persistence Volume (PV)
-  hosts: persistent_host
+  hosts: localhost
+  connection: local
   vars:
     pv_number: 20
-    pv_size  : 3Gi
-    nfs_server: 192.168.0.100
+    pv_size  : 5Gi
+    nfs_server: 192.168.56.100
     nfs_path_prefix  : /var/storage/local
   tasks:
     - name: Create all the necessary directories
@@ -25,21 +26,23 @@
 
     - name: Restart IPTables Service
       service: name=iptables state=restarted
+      notify: Restart IPTables Service
 
     - name: Modify information into NFS file
-      lineinfile: dest=/etc/sysconfig/nfs state=present line={{ item }}
+      lineinfile: dest=/etc/sysconfig/nfs state=present regexp={{ item.regex }} line={{ item.option }}
       with_items:
-         - "RPCMOUNTDOPTS=\"-p 20048\""
-         - "STATDARG=\"-p 50825\""
+         - { regex: "^RPCMOUNTDOPTS", option: "RPCMOUNTDOPTS=\"-p 20048\""}
+         - { regex: "^STATDARG",      option: "STATDARG=\"-p 50825\""}
 
-    - name: Modify information on sysctl
-      lineinfile: dest=/etc/sysctl.conf state=present line={{ item }}
-      with_items:
-         - "fs.nfs.nlm_tcpport=53248"
-         - "fs.nfs.nlm_udpport=53248"
-
-    - name: Persist the changes for sysctl
-      command: sysctl -p
+# Bug according to: https://access.redhat.com/solutions/2200331
+#    - name: Modify information on sysctl
+#      lineinfile: dest=/etc/sysctl.conf state=present line={{ item }}
+#      with_items:
+#         - "fs.nfs.nlm_tcpport=53248"
+#         - "fs.nfs.nlm_udpport=53248"
+#
+#    - name: Persist the changes for sysctl
+#      command: sysctl -p
 
     - name: Restart all the necessary services related to NFS
       service: name={{ item }}  state=restarted enabled=true
@@ -58,5 +61,6 @@
     - name: Create the PV's from a temporary directory
       command: oc create -f /tmp/persistentvolume.yaml
 
-
-
+  handlers:
+    - name: Restart IPTables Service
+      service: name=iptables state=restarted
