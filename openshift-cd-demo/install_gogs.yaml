@@ -1,0 +1,24 @@
+---
+- name: Installing Gogs
+  hosts: localhost
+  connection: local
+  vars:
+     - gogs_username: gogs
+     - gogs_password: gogs
+     - gogs_database_username: gogs
+     - gogs_database_password: gogs
+     - namespace: tool
+  tasks:
+     - name: Retrieving Gogs's IP
+       command: oc get service/gogs --output template --template "{{ '{{' }}.spec.clusterIP{{ '}}' }}" --namespace {{ namespace }}
+       register: gogs_ip       
+
+     - name: Retrieving Gog's Port Number
+       command: oc get service/gogs --output jsonpath="{.spec.ports.*.port}" --namespace {{ namespace }} 
+       register: gogs_port
+
+     - name: Installing Gogs for the very first time
+       uri: method=POST HEADER_Content-type="application/x-www-form-urlencoded" url="http://gogs.cloudapps.example.com/install" 
+            body="db_type=PostgreSQL&db_host=172.30.146.17%3A5432&db_user=user4X4&db_passwd=LceaTgy3mahqCdNg&db_name=gogs&ssl_mode=disable&db_path=data%2Fgogs.db&app_name=Gogs%3A+Go+Git+Service&repo_root_path=%2Fhome%2Fgogs%2Fgogs-repositories&run_user=gogs&domain=localhost&ssh_port=22&http_port=3000&app_url=http%3A%2F%2Fgogs.cloudapps.example.com%2F&log_root_path=%2Fopt%2Fgogs%2Flog&admin_name=mauricio&admin_passwd=maltron&admin_confirm_passwd=maltron&admin_email=admin%40gogs.com"
+
+
