@@ -16,17 +16,19 @@
       template: src=templates/exports.j2 dest=/etc/exports
 
     - name: Add the following lines into the IPTables rules for NFS
-      lineinfile: dest=/etc/sysconfig/iptables state=present insertbefore="COMMIT" line={{ item }}
+      lineinfile: dest=/etc/sysconfig/iptables state=present insertbefore="COMMIT" line="{{ item }}"
       with_items: 
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 111 -j ACCEPT"
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 2049 -j ACCEPT"
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 20048 -j ACCEPT"
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 50825 -j ACCEPT"
          - "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 53248 -j ACCEPT"
+      tags: iptables
 
     - name: Restart IPTables Service
       service: name=iptables state=restarted
       notify: Restart IPTables Service
+      tags: iptables
 
     - name: Modify information into NFS file
       lineinfile: dest=/etc/sysconfig/nfs state=present regexp={{ item.regex }} line={{ item.option }}
