@@ -42,7 +42,6 @@
        uri: method=POST HEADER_Content-type="application/x-www-form-urlencoded" url="{{ gogs_url_install }}"
             body="db_type={{ gogs_database_type | urlencode }}&db_host={{ gogs_database_ip.stdout | urlencode }}%3A{{ gogs_database_port.stdout }}&db_user={{ gogs_database_username.stdout }}&db_passwd={{ gogs_database_password.stdout }}&db_name={{ gogs_database_name.stdout | urlencode }}&ssl_mode=disable&db_path=data%2Fgogs.db&app_name={{ gogs_application_name | urlencode }}&repo_root_path={{ gogs_repository_path | urlencode }}&run_user=gogs&domain=localhost&ssh_port=22&http_port=3000&app_url={{ gogs_application_url | urlencode }}&log_root_path=%2Fopt%2Fgogs%2Flog&admin_name={{ gogs_username | urlencode }}&admin_passwd={{ gogs_password | urlencode }}&admin_confirm_passwd={{ gogs_password | urlencode }}&admin_email={{ gogs_admin_email | urlencode }}"
        register: result_install
-       failed_when: result_install.status != 302
 
      - debug: var=result_install 
 
