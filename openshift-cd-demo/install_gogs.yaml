@@ -9,6 +9,11 @@
      - gogs_database_password: gogs
      - namespace: tool
   tasks:
+
+     - name: Retrieving Gog's Database Username
+       command: oc get dc/postgresql-gogs -o jsonpath="{.spec.template.spec.containers[*].env[?(@.name==\"POSTGRESQL_USER\")].value}"
+       register: gogs_database_username
+
      - name: Retrieving Gogs's IP
        command: oc get service/gogs --output template --template "{{ '{{' }}.spec.clusterIP{{ '}}' }}" --namespace {{ namespace }}
        register: gogs_ip       
