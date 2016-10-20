@@ -1,0 +1,24 @@
+---
+- name: Importing GITHUB Repository
+  hosts: localhost
+  connection: local
+  vars:
+     gogs_url_api: http://gogs.cloudapps.example.com/api/v1
+     user: gogs
+     password: gogs
+  tasks:
+#     - debug: msg="{\"clone_addr\"{{ ":" }}\"https{{ ":" }}//github.com/OpenShiftDemos/openshift-tasks.git\",\"uid\"{{ ":" }} 1,\"repo_name\"{{ ":" }} \"openshift-tasks\"}"
+#
+#     - name: Importing GitHub Repository
+#       uri: method=POST body_format=json url={{ gogs_url_api }}/repos/migrate 
+#            user={{ user }} password={{ password }} force_basic_auth=yes
+#            body="{\"clone_addr\"{{ ":" }}\"https{{ ":" }}//github.com/OpenShiftDemos/openshift-tasks.git\",\"uid\"{{ ":" }} 1,\"repo_name\"{{ ":" }} \"openshift-tasks\"}"
+#       register: json_resulta
+
+     - name: Add a WebHook to Gogs to trigger pipeline to push
+       uri: method=POST body_format=json url={{ gogs_url_api }}/repos/{{ user }}/openshift-tasks/hooks
+            user={{ user }} password={{ password }} force_basic_auth=yes
+            body="{\"type\"{{ ":" }} \"gogs\",\"config\"{{ ":" }} {\"url\"{{ ":" }} \"http{{ ":" }}//admin{{ ":" }}$JENKINS_PASSWORD@$JENKINSSVC/job/tasks-cd-pipeline/build?delay=0sec\",\"content_type\"{{ ":" }} \"json\"},\"events\"{{ ":" }} [\"push\"],\"active\"{{ ":" }} true}"
+       register: json_result
+
+     - debug: var=json_result

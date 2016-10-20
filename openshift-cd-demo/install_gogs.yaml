@@ -11,6 +11,8 @@
      - gogs_application_name: "Gogs: Go Git Service"
      - gogs_repository_path: /home/gogs/gogs-repositories
      - gogs_application_url: "http://gogs.cloudapps.example.com/"
+     - gogs_url_api: "http://gogs.cloudapps.example.com/api/v1"
+     - jenkins_url: "http://jenkins.cloudapps.example.com"
      - namespace: tool
   tasks:
 
@@ -36,16 +38,28 @@
 
      - debug: msg="Username{{ ":" }} {{ gogs_database_username.stdout }} Password {{ gogs_database_password.stdout }} Name {{ gogs_database_name.stdout }} IP {{ gogs_database_ip.stdout }} Port {{ gogs_database_port.stdout }}"
 
-     - debug: msg="Body{{ ":" }} db_type={{ gogs_database_type | urlencode }}&db_host={{ gogs_database_ip.stdout | urlencode }}%3A{{ gogs_database_port.stdout }}&db_user={{ gogs_database_username.stdout }}&db_passwd={{ gogs_database_password.stdout }}&db_name={{ gogs_database_name.stdout | urlencode }}&ssl_mode=disable&db_path=data%2Fgogs.db&app_name={{ gogs_application_name | urlencode }}&repo_root_path={{ gogs_repository_path | urlencode }}&run_user=gogs&domain=localhost&ssh_port=22&http_port=3000&app_url={{ gogs_application_url | urlencode }}&log_root_path=%2Fopt%2Fgogs%2Flog&admin_name={{ gogs_username | urlencode }}&admin_passwd={{ gogs_password | urlencode }}&admin_confirm_passwd={{ gogs_password | urlencode }}&admin_email={{ gogs_admin_email | urlencode }}"
+#     - debug: msg="Body{{ ":" }} db_type={{ gogs_database_type | urlencode }}&db_host={{ gogs_database_ip.stdout | urlencode }}%3A{{ gogs_database_port.stdout }}&db_user={{ gogs_database_username.stdout }}&db_passwd={{ gogs_database_password.stdout }}&db_name={{ gogs_database_name.stdout | urlencode }}&ssl_mode=disable&db_path=data%2Fgogs.db&app_name={{ gogs_application_name | urlencode }}&repo_root_path={{ gogs_repository_path | urlencode }}&run_user=gogs&domain=localhost&ssh_port=22&http_port=3000&app_url={{ gogs_application_url | urlencode }}&log_root_path=%2Fopt%2Fgogs%2Flog&admin_name={{ gogs_username | urlencode }}&admin_passwd={{ gogs_password | urlencode }}&admin_confirm_passwd={{ gogs_password | urlencode }}&admin_email={{ gogs_admin_email | urlencode }}"
 
      - name: Installing Gogs for the very first time
        uri: method=POST HEADER_Content-type="application/x-www-form-urlencoded" url="{{ gogs_url_install }}"
             body="db_type={{ gogs_database_type | urlencode }}&db_host={{ gogs_database_ip.stdout | urlencode }}%3A{{ gogs_database_port.stdout }}&db_user={{ gogs_database_username.stdout }}&db_passwd={{ gogs_database_password.stdout }}&db_name={{ gogs_database_name.stdout | urlencode }}&ssl_mode=disable&db_path=data%2Fgogs.db&app_name={{ gogs_application_name | urlencode }}&repo_root_path={{ gogs_repository_path | urlencode }}&run_user=gogs&domain=localhost&ssh_port=22&http_port=3000&app_url={{ gogs_application_url | urlencode }}&log_root_path=%2Fopt%2Fgogs%2Flog&admin_name={{ gogs_username | urlencode }}&admin_passwd={{ gogs_password | urlencode }}&admin_confirm_passwd={{ gogs_password | urlencode }}&admin_email={{ gogs_admin_email | urlencode }}"
        register: result_install
-       failed_when: result_install.status != 302
+       failed_when: result_install.status != 302 and result_install.location != "{{ gogs_application_url }}/user/login"
 
-     - debug: var=result_install 
+     - name: Importing GitHub Repository
+       uri: method=POST body_format=json url={{ gogs_url_api }}/repos/migrate
+            user={{ gogs_username }} password={{ gogs_password }} force_basic_auth=yes
+            body="{\"clone_addr\"{{ ":" }}\"https{{ ":" }}//github.com/OpenShiftDemos/openshift-tasks.git\",\"uid\"{{ ":" }} 1,\"repo_name\"{{ ":" }} \"openshift-tasks\"}"
+       register: json_result
+       failed_when: json_result.status != 201
 
+     - name: Retrieving Jenkins's Password
+       command: oc get deploymentconfig/jenkins -o jsonpath="{.spec.template.spec.containers[*].env[?(@.name==\"JENKINS_PASSWORD\")].value}" --namespace {{ namespace }}
+       register: jenkins_password
 
-
-
+     - name: Add a WebHook to Gogs to trigger pipeline to push
+       uri: method=POST body_format=json url={{ gogs_url_api }}/repos/{{ gogs_username }}/openshift-tasks/hooks
+            user={{ gogs_username }} password={{ gogs_password }} force_basic_auth=yes
+            body="{\"type\"{{ ":" }} \"gogs\",\"config\"{{ ":" }} {\"url\"{{ ":" }} \"http{{ ":" }}//admin{{ ":" }}${{ jenkins_password.stdout }}@${{ jenkins_url }}/job/tasks-cd-pipeline/build?delay=0sec\",\"content_type\"{{ ":" }} \"json\"},\"events\"{{ ":" }} [\"push\"],\"active\"{{ ":" }} true}"
+       register: json_result
+       failed_when: json_result.status != 201
