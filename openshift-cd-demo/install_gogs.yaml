@@ -60,6 +60,6 @@
      - name: Add a WebHook to Gogs to trigger pipeline to push
        uri: method=POST body_format=json url={{ gogs_url_api }}/repos/{{ gogs_username }}/openshift-tasks/hooks
             user={{ gogs_username }} password={{ gogs_password }} force_basic_auth=yes
-            body="{\"type\"{{ ":" }} \"gogs\",\"config\"{{ ":" }} {\"url\"{{ ":" }} \"http{{ ":" }}//admin{{ ":" }}${{ jenkins_password.stdout }}@${{ jenkins_url }}/job/tasks-cd-pipeline/build?delay=0sec\",\"content_type\"{{ ":" }} \"json\"},\"events\"{{ ":" }} [\"push\"],\"active\"{{ ":" }} true}"
+            body="{\"type\"{{ ":" }} \"gogs\",\"config\"{{ ":" }} {\"url\"{{ ":" }} \"http{{ ":" }}//admin{{ ":" }}{{ jenkins_password.stdout }}@{{ jenkins_url }}/job/tasks-cd-pipeline/build?delay=0sec\",\"content_type\"{{ ":" }} \"json\"},\"events\"{{ ":" }} [\"push\"],\"active\"{{ ":" }} true}"
        register: json_result
        failed_when: json_result.status != 201
