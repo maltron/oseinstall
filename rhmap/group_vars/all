@@ -1,0 +1,5 @@
+project_core: "rhmap-core"
+selector_core: "host=core"
+project_mbaas: "rhmap-mbaas"
+selector_mbaas: "host=mbaas" 
+directory_rhmap: /opt/rhmap/templates

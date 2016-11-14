@@ -1,0 +1,97 @@
+---
+- name: Installing Red Hat Mobile Application Platform 4.2
+  hosts: localhost
+  connection: local
+  vars: 
+     smtp_server: "localhost"
+     smtp_username: "username"
+     smtp_password: "password"
+     smtp_from_address: "nagios@example.com"
+     admin_email:  "root@localhost"
+  tasks:
+     - name: "Create a Core Project named \"{{ project_core }}\""
+       command: "oc new-project {{ project_core}} --display-name=\"CORE: Red Hat Mobile Application Platform\""
+       tags: core
+
+     - name: "Make sure this project runs only on a Node {{ selector_core }}"
+       command: "oc patch namespace/{{ project_core }} --patch='{\"metadata\": {\"annotations\": {\"openshift.io/node-selector\": \"{{ selector_core }}\" }}}' --namespace {{ project_core }}"
+       when: selector_core is defined
+       tags: core
+
+     - name: "Creating a Service Account for Nagios"
+       command: oc create serviceaccount nagios --namespace {{ project_core }}
+       tags: core
+
+     - name: "Add Role ServiceAccount Nagios as an Admin"
+       command: oc policy add-role-to-user admin --serviceaccount=nagios
+       tags: core
+
+     - name: "Create Monitoring Resouces"
+       command: oc new-app --file {{ directory_rhmap }}/core/fh-core-monitoring.json --param SMTP_SERVER={{ smtp_server }} --param SMTP_USERNAME={{ smtp_username }} --param SMTP_PASSWORD={{ smtp_password }} --param SMTP_FROM_ADDRESS={{ smtp_from_address }} --param ADMIN_EMAIL={{ admin_email }} --param RHMAP_HOSTGROUPS="core" --namespace {{ project_core }}
+       tags: core
+
+     - name: "Remove any possible existing ssh keys"
+       file: path=/tmp/{{ item}} state=absent force=yes
+       with_items:
+          - repoadmin_id_rsa
+          - repoadmin_id_rsa.pub
+          - gitlab_shell_id_rsa
+          - gitlab_shell_id_rsa.pub
+
+     - name: "Create SSH keys RepoAdmin"
+       command: "ssh-keygen -q -N \'\' -C \"repoadmin_id_rsa\" -f \"/tmp/repoadmin_id_rsa\""
+       tags: core
+
+     - name: "Create SSH keys GitShell"
+       command: "ssh-keygen -q -N \'\' -C \"gitlab_shell_id_rsa\" -f \"/tmp/gitlab_shell_id_rsa\""
+       tags: core
+
+     - name: "Creating Secrets based on SSH keys previous created"
+       command: oc secrets new gitlab-ssh repoadmin-id-rsa=/tmp/repoadmin_id_rsa repoadmin-id-rsa-pub=/tmp/repoadmin_id_rsa.pub gitlab-shell-id-rsa=/tmp/gitlab_shell_id_rsa gitlab-shell-id-rsa-pub=/tmp/gitlab_shell_id_rsa.pub --namespace {{ project_core }}
+       tags: core
+
+     - name: "Creating the Security Context Constraint for Monitoring Services"
+       command: oc create --filename {{ directory_rhmap }}/core/scc-anyuid-with-chroot.json --namespace {{ project_core }}
+       tags: core
+
+     - name: "Specify the Security Context Constraint for project \"{{ project_core }}\""
+       command: oadm policy add-scc-to-user anyuid-with-chroot system:serviceaccount:{{ project_core }}:default
+       tags: core
+
+     - name: "Creating Core InfraStructure"
+       command: oc new-app --file {{ directory_rhmap }}/core/fh-core-infra.json --namespace {{ project_core }}
+       tags: core
+
+     - name: "Creating Backend" 
+       command: oc new-app --file {{ directory_rhmap }}/core/fh-core-backend.json --namespace {{ project_core }}
+       tags: core
+
+     - name: "Get the GIT URL to feed into Frontend. It should be something like git-rhmap-core.cloudapps.example.com"
+       command: "oc get route git --template=\"{{ '{{'  }}.spec.host{{ '}}' }}\""
+       register: result_git
+       tags: core
+
+     - name: "Get only the subdomain. It should be something like cloudapps.example.com"
+       set_fact: router_subdomain={{ result_git.stdout | regex_replace("^(.*?)\.", "") }} 
+       tags: core
+
+     - name: "Create Frontend" 
+       command: oc new-app --file {{ directory_rhmap }}/core/fh-core-frontend.json --param CLUSTER_DOMAIN={{ router_subdomain }} --param GIT_EXTERNAL_HOST={{ result_git.stdout }} 
+       tags: core
+
+     - name: "Get the FrontEnd URL"
+       command: "oc get route rhmap --template \"https://{{ '{{' }}.spec.host{{ '}}'}}\""
+       register: frontend_url
+
+     - name: "Get the FrontEnd's Username"
+       command: "oc get dc/millicore --output jsonpath='{{ '{' }}.spec.template.spec.containers[*].env[?(@.name==\"FH_ADMIN_USER_NAME\")].value{{ '}' }}'"
+       register: frontend_username
+
+     - name: "Get the FrontEnd's Password" 
+       command: "oc get dc/millicore --output jsonpath='{{ '{' }}.spec.template.spec.containers[*].env[?(@.name==\"FH_ADMIN_USER_PASSWORD\")].value{{ '}' }}'"
+       register: frontend_password
+
+     - debug: msg="FrontEnd{{ ":" }} {{ frontend_url.stdout }}  Username{{ ":" }} {{ frontend_username.stdout }}  Password{{ ":" }} {{ frontend_password.stdout }}"
+
+
+

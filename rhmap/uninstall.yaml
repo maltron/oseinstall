@@ -1,0 +1,24 @@
+---
+- name: Uninstall Red Hat Mobile Application Platform 4.2
+  hosts: localhost
+  connection: local
+  tasks:
+     - name: Remove Core Project named \"{{ project_core }}\"
+       command: oc delete project/{{ project_core }}
+       ignore_errors: True
+
+     - name: Remove MBaaS Project named \"{{ project_mbaas }}\"
+       command: oc delete project/{{ project_mbaas }}
+       ignore_errors: True
+
+     - name: Remove Service Account for Nagios
+       command: oc delete serviceaccount/nagios
+       ignore_errors: True
+
+     - name: Remove Secret Gitlab-ssh
+       command: oc delete secret/gitlab-ssh
+       ignore_errors: True
+
+     - name: Remove Security Context Constraint anyuid-with-chroot
+       command: oc delete scc/anyuid-with-chroot
+       ignore_errors: True
