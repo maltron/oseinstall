@@ -27,6 +27,7 @@
      - repoadmin_id_rsa.pub
      - gitlab_shell_id_rsa
      - gitlab_shell_id_rsa.pub
+  tags: core
 
 - name: "Create SSH keys RepoAdmin"
   command: "ssh-keygen -q -N \'\' -C \"repoadmin_id_rsa\" -f \"/tmp/repoadmin_id_rsa\""
@@ -70,18 +71,27 @@
   tags: core
 
 - name: "Get the FrontEnd URL"
-  command: "oc get route rhmap --template \"https://{{ '{{' }}.spec.host{{ '}}'}}\""
+  command: "oc get route rhmap --template \"https://{{ '{{' }}.spec.host{{ '}}'}}\" --namespace {{ project_core }}"
   register: frontend_url
+  tags:
+     - core
+     - info
 
 - name: "Get the FrontEnd's Username"
-  command: "oc get dc/millicore --output jsonpath='{{ '{' }}.spec.template.spec.containers[*].env[?(@.name==\"FH_ADMIN_USER_NAME\")].value{{ '}' }}'"
+  command: "oc get dc/millicore --output jsonpath='{{ '{' }}.spec.template.spec.containers[*].env[?(@.name==\"FH_ADMIN_USER_NAME\")].value{{ '}' }}' --namespace {{ project_core }}"
   register: frontend_username
+  tags: 
+     - core
+     - info
 
 - name: "Get the FrontEnd's Password" 
-  command: "oc get dc/millicore --output jsonpath='{{ '{' }}.spec.template.spec.containers[*].env[?(@.name==\"FH_ADMIN_USER_PASSWORD\")].value{{ '}' }}'"
+  command: "oc get dc/millicore --output jsonpath='{{ '{' }}.spec.template.spec.containers[*].env[?(@.name==\"FH_ADMIN_USER_PASSWORD\")].value{{ '}' }}' --namespace {{ project_core }}"
   register: frontend_password
+  tags: 
+     - core
+     - info
 
 - debug: msg="FrontEnd{{ ":" }} {{ frontend_url.stdout }}  Username{{ ":" }} {{ frontend_username.stdout }}  Password{{ ":" }} {{ frontend_password.stdout }}"
-
-
-
+  tags:
+     - core
+     - info
