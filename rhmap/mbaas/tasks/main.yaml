@@ -1,0 +1,13 @@
+---
+- name: "Create a MBaaS Project named \"{{ project_mbaas }}\""
+  command: "oc new-project {{ project_mbaas }} --display-name=\"MBaaS: Red Hat Mobile Application Platform\""
+  tags: mbaas
+
+- name: "Make sure this project runs only on a Node {{ selector_mbaas }}"
+  command: "oc patch namespace/{{ project_mbaas }} --patch='{\"metadata\": {\"annotations\": {\"openshift.io/node-selector\": \"{{ selector_mbaas }}\" }}}' --namespace {{ project_mbaas }}"
+  when: selector_mbaas is defined
+  tags: mbaas
+
+- name: "Create the MBaaS Resources" 
+  command: "oc new-app --file {{ directory_rhmap }}/mbaas/fh-mbaas-template-1node.json --namespace {{ project_mbaas }}"
+  tags: mbaas
