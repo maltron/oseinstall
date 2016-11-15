@@ -1,0 +1,19 @@
+---
+- name: Setting DNS Server to point to OpenShift's Host
+  hosts: nameserver
+  vars:
+     dns_file: /var/named/dynamic/cloudapps.example.com.db
+  tasks:
+    - name: Check if the variable <router_public_ip> exists 
+      fail: msg="### Variable <router_public_ip> doesn't exist. Please use -e option{{ ':' }} ansible-playbook dns_adjust_to_router.yaml -e router_public_ip=32.24.76.52"
+      when: router_public_ip is not defined
+
+    - name: Change the line with the Host where the Router resides
+      lineinfile: dest={{ dns_file }}  regexp="^\*" line="*     A   {{ router_public_ip }}"
+      notify:
+         - Restart Named Service
+
+  handlers:
+    - name: Restart Named Service
+      service: name=named state=restarted
+
