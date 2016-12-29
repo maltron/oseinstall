@@ -5,5 +5,5 @@ master.example.com
 infra.example.com
 
 [openshift-nodes]
-node[1:10].example.com
+node[1:12].example.com
 
