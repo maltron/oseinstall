@@ -1,0 +1,9 @@
+[openshift-master]
+master.example.com
+
+[openshift-infra]
+infra.example.com
+
+[openshift-nodes]
+node[1:10].example.com
+

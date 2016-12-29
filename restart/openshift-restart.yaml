@@ -1,0 +1,18 @@
+---
+- name: Restarting Openshift's Master
+  hosts: openshift-master
+  tasks:
+    - name: Restarting Service "atomic-openshift-master" 
+      service: name=atomic-openshift-master state=restarted
+
+- name: Restarting OpenShift's Nodes
+  hosts: all
+  vars:
+     openshift_services: 
+        - docker
+        - openvswitch
+        - atomic-openshift-node
+  tasks:
+    - name: Restarting all key services
+      service: name={{ item }} state=restarted
+      with_items: "{{ openshift_services }}"
