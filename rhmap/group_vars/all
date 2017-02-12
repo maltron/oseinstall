@@ -3,3 +3,4 @@ selector_core: "rhmap=core"
 project_mbaas: "rhmap-mbaas"
 selector_mbaas: "rhmap=mbaas" 
 directory_rhmap: /opt/rhmap/templates
+project_admin_user: demo

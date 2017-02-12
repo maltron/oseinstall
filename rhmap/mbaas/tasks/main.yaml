@@ -5,7 +5,7 @@
   tags: mbaas
  
 - name: "Create a MBaaS Project named \"{{ project_mbaas }}\""
-  command: "oc new-project {{ project_mbaas }} --display-name=\"MBaaS: Red Hat Mobile Application Platform\""
+  command: "oadm new-project {{ project_mbaas }} --display-name=\"MBaaS: Red Hat Mobile Application Platform\" --admin={{ project_admin_user }}"
   register: create_namespace
   until: create_namespace.rc == 0
   retries: 25

@@ -1,0 +1,16 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Remove all Persistent Volumes 
+  hosts: localhost
+  connection: local
+  vars:
+    volumes:
+        - { name: "mongodb-1", pvc_name: "mongodb-data-volume", namespace: "rhmap-core" }
+        - { name: "mysql",     pvc_name: "mysql-data", namespace: "rhmap-core" }
+        - { name: "gitlab-shell", pvc_name: "git-data-volume", namespace: "rhmap-core" }
+        - { name: "nagios",       pvc_name: "nagios-data-volume", namespace: "rhmap-core" }
+  tasks:
+    - name: Removing all Persistent Volumes
+      command: oc delete deploymentconfig/{{ item.name }} --name={{ item.pvc_name }} --remove --namespace {{ item.namespace }}
+      with_items: "{{ volumes }}"
+ 

@@ -33,7 +33,7 @@
      - cleanup
 
 - name: "Create a Core Project named \"{{ project_core }}\""
-  command: "oc new-project {{ project_core }} --display-name=\"CORE: Red Hat Mobile Application Platform\""
+  command: "oadm new-project {{ project_core }} --display-name=\"CORE: Red Hat Mobile Application Platform\" --admin={{ project_admin_user }}"
   register: create_namespace
   until: create_namespace.rc == 0
   retries: 25
@@ -50,7 +50,7 @@
   tags: core
 
 - name: "Add Role ServiceAccount Nagios as an Admin"
-  command: oc policy add-role-to-user admin --serviceaccount=nagios
+  command: oc policy add-role-to-user admin --serviceaccount=nagios --namespace {{ project_core }}
   tags: core
 
 - name: "Create Monitoring Resouces"
@@ -86,7 +86,7 @@
   tags: core
 
 - name: "Get the GIT URL to feed into Frontend. It should be something like git-rhmap-core.cloudapps.example.com"
-  command: "oc get route git --template=\"{{ '{{'  }}.spec.host{{ '}}' }}\""
+  command: "oc get route git --template=\"{{ '{{'  }}.spec.host{{ '}}' }}\" --namespace {{ project_core }}"
   register: result_git
   tags: core
 
@@ -95,7 +95,7 @@
   tags: core
 
 - name: "Create Frontend" 
-  command: oc new-app --file {{ directory_rhmap }}/core/fh-core-frontend.json --param CLUSTER_DOMAIN={{ router_subdomain }} --param GIT_EXTERNAL_HOST={{ result_git.stdout }} 
+  command: oc new-app --file {{ directory_rhmap }}/core/fh-core-frontend.json --param CLUSTER_DOMAIN={{ router_subdomain }} --param GIT_EXTERNAL_HOST={{ result_git.stdout }} --namespace {{ project_core }}
   tags: core
 
 - name: "Get the FrontEnd URL"
