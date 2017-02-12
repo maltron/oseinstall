@@ -11,6 +11,6 @@
         - { name: "nagios",       pvc_name: "nagios-data-volume", namespace: "rhmap-core" }
   tasks:
     - name: Removing all Persistent Volumes
-      command: oc delete deploymentconfig/{{ item.name }} --name={{ item.pvc_name }} --remove --namespace {{ item.namespace }}
+      command: oc volume deploymentconfig/{{ item.name }} --name={{ item.pvc_name }} --remove --namespace {{ item.namespace }}
       with_items: "{{ volumes }}"
  
