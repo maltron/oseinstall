@@ -9,6 +9,7 @@
         - { name: "mysql",     pvc_name: "mysql-data", namespace: "rhmap-core" }
         - { name: "gitlab-shell", pvc_name: "git-data-volume", namespace: "rhmap-core" }
         - { name: "nagios",       pvc_name: "nagios-data-volume", namespace: "rhmap-core" }
+        - { name: "fh-scm",       pvc_name: "scm-data", namespace: "rhmap-core" }
   tasks:
     - name: Removing all Persistent Volumes
       command: oc volume deploymentconfig/{{ item.name }} --name={{ item.pvc_name }} --remove --namespace {{ item.namespace }}
