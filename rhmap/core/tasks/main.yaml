@@ -1,6 +1,43 @@
 ---
+- name: "Remove any possible existing ssh keys"
+  file: path=/tmp/{{ item }} state=absent force=yes
+  ignore_errors: True
+  with_items:
+     - repoadmin_id_rsa
+     - repoadmin_id_rsa.pub
+     - gitlab_shell_id_rsa
+     - gitlab_shell_id_rsa.pub
+  tags: 
+     - core
+     - cleanup
+
+- name: Delete any previous scc created named anyuid-with-chroot
+  command: oc delete scc/anyuid-with-chroot
+  ignore_errors: True
+  tags:
+     - core
+     - cleanup
+
+- name: Delete any previous ServiceAccount previously created
+  command: oc delete serviceaccount/nagios --namespace {{ project_core }}
+  ignore_errors: True
+  tags:
+     - core
+     - cleanup
+
+- name: Delete any previously Created Project name \"{{ project_core }}\"
+  command: oc delete project {{ project_core }} 
+  ignore_errors: True
+  tags: 
+     - core
+     - cleanup
+
 - name: "Create a Core Project named \"{{ project_core }}\""
   command: "oc new-project {{ project_core }} --display-name=\"CORE: Red Hat Mobile Application Platform\""
+  register: create_namespace
+  until: create_namespace.rc == 0
+  retries: 25
+  delay: 10
   tags: core
 
 - name: "Make sure this project runs only on a Node {{ selector_core }}"
@@ -18,15 +55,6 @@
 
 - name: "Create Monitoring Resouces"
   command: oc new-app --file {{ directory_rhmap }}/core/fh-core-monitoring.json --param SMTP_SERVER={{ smtp_server }} --param SMTP_USERNAME={{ smtp_username }} --param SMTP_PASSWORD={{ smtp_password }} --param SMTP_FROM_ADDRESS={{ smtp_from_address }} --param ADMIN_EMAIL={{ admin_email }} --param RHMAP_HOSTGROUPS="core" --namespace {{ project_core }}
-  tags: core
-
-- name: "Remove any possible existing ssh keys"
-  file: path=/tmp/{{ item }} state=absent force=yes
-  with_items:
-     - repoadmin_id_rsa
-     - repoadmin_id_rsa.pub
-     - gitlab_shell_id_rsa
-     - gitlab_shell_id_rsa.pub
   tags: core
 
 - name: "Create SSH keys RepoAdmin"

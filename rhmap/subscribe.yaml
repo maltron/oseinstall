@@ -1,0 +1,50 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Subscribe all the hosts with the right key.
+  hosts: rhmap-hosts
+  vars: 
+    subscription_pool_id: 8a85f981576f2592015770330df347d9
+    repositories:
+         - rhel-7-server-rpms
+         - rhel-7-server-extras-rpms
+         - rhel-7-server-ose-3.3-rpms
+         - rhel-7-server-optional-rpms
+         - rhel-7-server-rhmap-4.2-rpms
+    rhmap_templates:
+         - rhmap-fh-openshift-templates
+  tasks:
+     - name: Check if there is a Subscription's Username from access.redhat.com
+       fail: msg="Use -e username=<YOUR USERNAME> provided from access.redhat.com subscription"
+       when: username is not defined
+
+     - name: Check if there is a Subscription's Password from access.redhat.com
+       fail: msg="Use -e password=<YOUR PASSWORD> provided from access.redhat.com subscription"
+       when: password is not defined
+
+     - name: Subscribe all the hosts using the variables username and password at access.redhat.com
+       command: subscription-manager register --username={{ username }} --password={{ password }}
+
+     - name: Attach Subscription's Pool ID
+       command: subscription-manager attach --pool={{ subscription_pool_id }}
+
+     - name: Disable all repositories
+       command: subscription-manager repos --disable="*"
+
+     - name: Enable all the necessary repositories 
+       command: subscription-manager repos --enable={{ item }}
+       with_items: "{{ repositories }}"
+
+     - name: Update all packages based on the latest repositories
+       yum: name='*' state=latest update_cache=yes
+
+     - name: Installing RHSM plugin subscription-manager-plugin-container
+       yum: name="subscription-manager-plugin-container" state=present
+
+     - name: Running rhsmcertd-worker to refresh the local certificate store
+       command: /usr/libexec/rhsmcertd-worker
+
+     - name: Installing all the necessary templates
+       yum: name={{ item }} state=present
+       with_items: "{{ rhmap_templates }}"
+       tags:
+          - templates

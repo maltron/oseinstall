@@ -1,6 +1,15 @@
 ---
+- name: Delete any previously created Project named \"{{ project_mbaas }}\"
+  command: oc delete project {{ project_mbaas }}
+  ignore_errors: True
+  tags: mbaas
+ 
 - name: "Create a MBaaS Project named \"{{ project_mbaas }}\""
   command: "oc new-project {{ project_mbaas }} --display-name=\"MBaaS: Red Hat Mobile Application Platform\""
+  register: create_namespace
+  until: create_namespace.rc == 0
+  retries: 25
+  delay: 10
   tags: mbaas
 
 - name: "Make sure this project runs only on a Node {{ selector_mbaas }}"
