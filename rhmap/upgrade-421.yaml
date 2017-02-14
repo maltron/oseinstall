@@ -1,0 +1,31 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Upgrading to RHMAP 4.2.1
+  hosts: localhost
+  connection: local
+  vars:
+    namespace: rhmap-core
+    containers_version:
+           - {name: "fh-aaa",       version: "1.0.2-4"}
+           - {name: "fh-appstore",  version: "2.0.1-5"}
+           - {name: "fh-mbaas",     version: "5.2.4-2"}
+           - {name: "fh-messaging", version: "3.0.1-5"}
+           - {name: "fh-metrics",   version: "3.0.1-6"}
+           - {name: "fh-ngui",      version: "5.4.23-3"}
+           - {name: "fh-scm",       version: "1.0.5-5"}
+           - {name: "fh-statsd",    version: "2.0.2-3"}
+           - {name: "fh-supercore", version: "4.5.5-4"}
+           - {name: "fh-sdks",      version: "1.0.0-9"}
+           - {name: "mongodb",      version: "3.2-11"}
+           - {name: "redis",        version: "2.8.21-21"}
+           - {name: "nagios",       version: "4.0.8-27"}
+           - {name: "memcached",    version: "1.4.15-11"}
+           - {name: "gitlab-shell", version: "2.1.1-6"}
+           - {name: "httpd",        version: "2.4-15"}
+           - {name: "mysql",        version: "5.5-8"}
+           - {name: "millicore",    version: "7.35.1-1"}
+           - {name: "ups-eap",      version: "1.1.4-9"} 
+  tasks:
+     - name: Patching all the components based
+       command: oc patch dc {{ item.name }} --type='json' -p='[{"op"{{ ':' }} "replace", "path"{{ ':' }} "/spec/template/spec/containers/0/image", "value"{{ ':' }}"rhmap42/{{ item.name }}{{ ':' }}{{ item.version }}"}]' --namespace {{ namespace }} 
+       with_items: "{{ containers_version }}"

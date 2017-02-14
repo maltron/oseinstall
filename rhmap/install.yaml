@@ -9,6 +9,12 @@
      smtp_password: "password"
      smtp_from_address: "nagios@example.com"
      admin_email:  "root@localhost"
+     smtp_port: "25"
+     smtp_auth: "false"
+     smtp_tls: "false"
+     email_replyto: "noreply@localhost"
+     builder_android_service_host: "<androidbuildfarmurl>"
+     builder_iphone_service_host: "<iphonebuildfarmurl>"
   roles: 
      - core
      - mbaas

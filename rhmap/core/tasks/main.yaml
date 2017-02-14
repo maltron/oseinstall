@@ -95,7 +95,7 @@
   tags: core
 
 - name: "Create Frontend" 
-  command: oc new-app --file {{ directory_rhmap }}/core/fh-core-frontend.json --param CLUSTER_DOMAIN={{ router_subdomain }} --param GIT_EXTERNAL_HOST={{ result_git.stdout }} --namespace {{ project_core }}
+  command: oc new-app --file {{ directory_rhmap }}/core/fh-core-frontend.json --param CLUSTER_DOMAIN={{ router_subdomain }} --param GIT_EXTERNAL_HOST={{ result_git.stdout }} --param SMTP_SERVER={{ smtp_server }} --param SMTP_USERNAME={{ smtp_username }} --param SMTP_PASSWORD={{ smtp_password }} --param EMAIL_REPLYTO={{ email_replyto }} --param SMTP_PORT={{ smtp_port }} --param SMTP_AUTH={{ smtp_auth }} --param SMTP_TLS={{ smtp_tls }} --param BUILDER_ANDROID_SERVICE_HOST={{ builder_android_service_host }} --param BUILDER_IPHONE_SERVICE_HOST={{ builder_iphone_service_host }} --namespace {{ project_core }}
   tags: core
 
 - name: "Get the FrontEnd URL"
