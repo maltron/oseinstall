@@ -1,0 +1,15 @@
+---
+- name: Modify Network adapter by disabling PEERDNS=no and add DNS Server
+  hosts: openshift_hosts
+  vars:
+     - interface_script: /etc/sysconfig/network-scripts/ifcfg-eth0
+     - dns_server: 192.168.0.150
+  tasks:
+     - name: Replace PEERDNS with value NO
+       lineinfile: dest={{ interface_script }} regexp="PEERDNS=" line="PEERDNS=\"no\"" state=present
+  
+     - name: Add the DNS server
+       lineinfile: dest={{ interface_script }} regexp="DNS1=" line="DNS1=\"{{ dns_server }}\"" state=present
+
+     - name: Restarting the Network Service
+       service: name=network state=restarted
