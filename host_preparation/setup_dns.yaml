@@ -6,17 +6,17 @@
     domain: example.com
     infranode: 192.168.1.100
   tasks:
-    - name: Setting all the necessary repositories 
-      include: repositories.yaml
+#    - name: Setting all the necessary repositories 
+#      include: repositories.yaml
 
-    - name: "Update All"
-      yum: name='*' state=latest update_cache=yes
+#    - name: "Update All"
+#      yum: name='*' state=latest update_cache=yes
 
-    - name: Install all the necessary packages
-      yum: name={{ item }} update_cache=yes
-      with_items:
-         - bind
-         - bind-utils
+#    - name: Install all the necessary packages
+#      yum: name={{ item }} update_cache=yes
+#      with_items:
+#         - bind
+#         - bind-utils
 
     - name: Templating the configuration file
       template: src=nameserver/etc/named.conf.j2 dest=/etc/named.conf
