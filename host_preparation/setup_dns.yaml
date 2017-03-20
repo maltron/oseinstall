@@ -4,7 +4,7 @@
   hosts: nameserver
   vars: 
     domain: example.com
-    infranode: 192.168.1.100
+    infranode: 23.23.70.33
   tasks:
 #    - name: Setting all the necessary repositories 
 #      include: repositories.yaml
@@ -41,4 +41,24 @@
 
     - name: Start the service for BIND
       service: name=named state=restarted enabled=true
+
+### ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING 
+###   ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING ADJUSTING 
+- name: Update all Hosts in the Cluster to use newly added DNS Server
+  hosts: openshift_hosts
+  vars:
+     infranode: 192.168.0.150
+  tasks:
+    - name: Disable PEERDNS in the Network interface eth0
+      lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth0 state=present regexp="^PEERDNS" line="PEERDNS=\"no\""
+      tags: adjust
+
+    - name: Add a DNS1 that points to our newly created DNS Server{{ ':' }} {{ infranode }}
+      lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth0 state=present regexp="^DNS1" line="DNS1=\"{{ infranode }}\""
+      tags: adjust
+
+    - name: Restart Network Service
+      service: name=network state=restarted
+      tags: adjust
+
    
